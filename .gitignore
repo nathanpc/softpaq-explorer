@@ -1,3 +1,6 @@
+# Temporary files
+allfiles.txt
+
 # Composer files
 composer.phar
 /vendor/
