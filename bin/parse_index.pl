@@ -13,7 +13,7 @@ use warnings;
 use autodie;
 use utf8;
 use Carp;
-use Data::Dumper;
+use DBI;
 
 =head1 METHODS
 
@@ -26,9 +26,9 @@ The script's main entry point.
 =cut
 
 sub main {
-	# Check if the index file was supplied.
-	if (scalar(@ARGV) < 1) {
-		die "Index file must be supplied.\n";
+	# Check if the required parameters were supplied.
+	if (scalar(@ARGV) < 2) {
+		die "Index file and database path must be supplied.\n";
 	}
 
 	# A little header section.
@@ -37,22 +37,42 @@ sub main {
 	# Get the records in the index.
 	my @strrecords = slurp_records($ARGV[0]);
 
+	# Open the database connection.
+	my $dbh = DBI->connect("dbi:SQLite:dbname=" . $ARGV[1], "", "")
+		or die "failed to connect to the database $DBI::errstr";
+
 	# Go through the records parsing them.
-	my @records = ();
 	my $fail_counter = 0;
 	foreach my $rec (@strrecords) {
 		# Parse the record into a hash.
 		my %record = parse_record($rec);
 		if (not %record) {
-			print "FAILED TO PARSE RECORD:\n\"$rec\"\n\n";
+			print "($fail_counter) FAILED TO PARSE RECORD:\n\"$rec\"\n\n";
 			$fail_counter++;
 			next;
 		}
 
-		# Push the hash record into the list.
-		push @records, \%record;
+		# Insert record into the database.
+		print 'Indexing ' . $record{exename} . '... ';
+		my $sth = $dbh->prepare('INSERT INTO archives (exename, orig_url, ' .
+			'size, rel_date, title, version, language, products, os, ' .
+			'supersedes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+		$sth->bind_param(1, $record{exename});
+		$sth->bind_param(2, $record{url});
+		$sth->bind_param(3, $record{size});
+		$sth->bind_param(4, $record{date});
+		$sth->bind_param(5, $record{title});
+		$sth->bind_param(6, $record{version});
+		$sth->bind_param(7, $record{lang});
+		$sth->bind_param(8, $record{products});
+		$sth->bind_param(9, $record{os});
+		$sth->bind_param(10, $record{supersedes});
+		$sth->execute;
+		print "done\n";
 	}
 
+	# Close the database connection.
+	$dbh->disconnect;
 	print "Parsing Failures: $fail_counter\n";
 }
 

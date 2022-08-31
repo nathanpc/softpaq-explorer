@@ -1,5 +1,6 @@
 # Temporary files
 allfiles.txt
+archives.db
 
 # Composer files
 composer.phar
@@ -61,7 +62,6 @@ node_modules/
 
 # ignore log files and databases
 *.log
-*.sql
 *.sqlite
 
 ###########
