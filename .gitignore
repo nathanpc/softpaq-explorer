@@ -1,6 +1,7 @@
 # Temporary files
 allfiles.txt
-archives.db
+*.db
+*.db-journal
 
 # Composer files
 composer.phar

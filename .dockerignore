@@ -1,0 +1,23 @@
+# Misc.
+LICENSE
+README.md
+
+# Index and Databases
+allfiles.txt
+*.db
+*.db-journal
+
+# Editors
+**/.vscode
+
+# Git
+**/.git/
+**/.git*
+
+# Docker
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+# Garbage
+**/.DS_Store
